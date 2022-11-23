@@ -1,0 +1,61 @@
+#define LED_PIN 7
+const int relayPin = 2;      // This pin drives the transistor (which
+drives the relay)
+const int timeDelay = 1000;
+int sensorPin = A2;
+int sensorValue=0;
+int outputValue=0;
+#include <WheatstoneBridge.h>
+
+WheatstoneBridge wsb_strain1(A0, 365, 675, 1, 1000);
+void setup()
+{
+  Serial.begin(9600);
+
+  pinMode(LED_BUILTIN, OUTPUT);
+  pinMode(relayPin, OUTPUT);  // set pin as an output
+}
+
+double val1;
+double valraw1;
+void loop()
+{
+
+  // Read strain 1
+  val1 = wsb_strain1.measureForce();
+  // valraw1 = wsb_strain1.getLastForceRawADC();
+  valraw1 = .2176 * val1 - 43.48;
+  // Display header line
+  Serial.println("");
+  Serial.println("\t\t\tStrain 1");
+
+  sensorValue = analogRead(sensorPin);
+  // map it to the range of the analog out:
+  outputValue = map(sensorValue, 0, 1023, 0, 255);
+  // change the analog out value:
+
+  // print the results to the Serial Monitor:
+  Serial.print("sensor = ");
+  Serial.print(sensorValue);
+  Serial.print("\t output = ");
+  Serial.println(outputValue);
+
+
+  // Display calculated force
+  Serial.print("Calculated mass:\t");
+  Serial.print(valraw1); Serial.print("\t\t");
+
+
+  if (valraw1 >= 150) {
+
+    digitalWrite(relayPin, HIGH); //turn ON the pump
+    digitalWrite(LED_BUILTIN, HIGH);
+  }
+
+  if (valraw1 < 10) {
+    digitalWrite(relayPin, LOW); //turn PFF the pump
+    digitalWrite(LED_BUILTIN, LOW);
+  }
+
+  delay(2);
+}
